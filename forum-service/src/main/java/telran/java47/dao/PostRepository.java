@@ -12,9 +12,7 @@ import telran.java47.forum.model.Post;
 
 
 
-public interface PostRepository extends MongoRepository<Post, Integer> {
-	@Query("{'id': ?0}")
-	Optional <Post> findById(String id);
+public interface PostRepository extends MongoRepository<Post, String> {
 	Stream<Post> findByAuthor(String author);
 	@Query("{'tags' : { '$in' : ?0}}")
 	Stream<Post> findPostsByTags(List<String> tags);
