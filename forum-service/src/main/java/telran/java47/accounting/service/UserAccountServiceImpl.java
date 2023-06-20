@@ -2,6 +2,7 @@ package telran.java47.accounting.service;
 
 import org.mindrot.jbcrypt.BCrypt;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -16,25 +17,20 @@ import telran.java47.accounting.model.UserAccount;
 
 @Service
 @RequiredArgsConstructor
-public class UserAccountServiceImpl implements UserAccountService {
-	
+public class UserAccountServiceImpl implements UserAccountService, CommandLineRunner {
+
 	final UserAccountRepository userAccountRepository;
 	final ModelMapper modelMapper;
 
-	
 	@Override
 	public UserDto register(UserRegisterDto userRegisterDto) {
-		if(userAccountRepository.existsById(userRegisterDto.getLogin())) {
+		if (userAccountRepository.existsById(userRegisterDto.getLogin())) {
 			throw new UserExistsException();
 		}
 		UserAccount userAccount = modelMapper.map(userRegisterDto, UserAccount.class);
-		String password=BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt());
+		String password = BCrypt.hashpw(userRegisterDto.getPassword(), BCrypt.gensalt());
 		userAccount.setPassword(password);
-		if (userAccountRepository.count() == 0) {
-			userAccount.addRole("Administrator");
-			userAccount.addRole("Moderator");
-		}
-		userAccount.addRole("USER");
+		userAccount.addRole(UserRole.USER);
 		userAccountRepository.save(userAccount);
 		return modelMapper.map(userAccount, UserDto.class);
 	}
@@ -55,10 +51,10 @@ public class UserAccountServiceImpl implements UserAccountService {
 	@Override
 	public UserDto updateUser(String login, UserEditDto userEditDto) {
 		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
-		if(userEditDto.getFirstName() != null) {
+		if (userEditDto.getFirstName() != null) {
 			userAccount.setFirstName(userEditDto.getFirstName());
 		}
-		if(userEditDto.getLastName() != null) {
+		if (userEditDto.getLastName() != null) {
 			userAccount.setLastName(userEditDto.getLastName());
 		}
 		userAccountRepository.save(userAccount);
@@ -66,23 +62,40 @@ public class UserAccountServiceImpl implements UserAccountService {
 	}
 
 	@Override
-	public RolesDto changRolesDto(String login, String role, boolean isAddRole) {
+	public RolesDto changRolesDto(String login, UserRole role, boolean isAddRole) {
 		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
-		if (isAddRole) {
-			userAccount.addRole(role);
-		} else {
-			userAccount.removeRole(role);
+		try {
+			UserRole.valueOf(UserRole.class, role.toString());
+			if (isAddRole) {
+				userAccount.addRole(role);
+			} else {
+				userAccount.removeRole(role);
+			}
+			userAccountRepository.save(userAccount);
+		} catch (IllegalArgumentException e) {
 		}
-		userAccountRepository.save(userAccount);
 		return modelMapper.map(userAccount, RolesDto.class);
 	}
 
 	@Override
 	public void changePassword(String login, String newPassword) {
 		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
-		String password=BCrypt.hashpw(newPassword, BCrypt.gensalt());
+		String password = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 		userAccount.setPassword(password);
 		userAccountRepository.save(userAccount);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		if (userAccountRepository.existsById("admin")) {
+			String password = BCrypt.hashpw("admin", BCrypt.gensalt());
+			UserAccount userAccount = new UserAccount("admin", password, "", "");
+			userAccount.addRole(UserRole.USER);
+			userAccount.addRole(UserRole.MODERATOR);
+			userAccount.addRole(UserRole.ADMINISTRATOR);
+			userAccountRepository.save(userAccount);
+		}
+
 	}
 
 }

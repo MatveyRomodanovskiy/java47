@@ -19,8 +19,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import telran.java47.accounting.dao.UserAccountRepository;
-import telran.java47.accounting.dto.exceptions.UserExistsException;
-import telran.java47.accounting.dto.exceptions.UserNotFoundException;
 import telran.java47.accounting.model.UserAccount;
 
 @Component
@@ -46,6 +44,7 @@ public class AuthenticationFilter implements Filter {
 			UserAccount userAccount = userAccountRepository.findById(credentialStrings[0]).orElse(null);
 			if (userAccount == null || !BCrypt.checkpw(credentialStrings[1], userAccount.getPassword())) {
 				response.sendError(401, "login or password is not valid");
+				return;
 			} 
 			request = new WrappedRequest(request, credentialStrings[0]);
 		}
