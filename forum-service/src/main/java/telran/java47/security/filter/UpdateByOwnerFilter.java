@@ -12,13 +12,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 
 
 @Component
 @Order(30)
-public class UpdateUserByOwnerAccessFilter implements Filter {
+public class UpdateByOwnerFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -44,6 +45,9 @@ public class UpdateUserByOwnerAccessFilter implements Filter {
 	}
 
 	private boolean checkEndPoint(String method, String path) {
-		return "PUT".equalsIgnoreCase(method)&&path.matches("/account/user/\\w+/?");
+		return (HttpMethod.PUT.toString().equals(method)&&path.matches("/account/user/\\w+/?")
+				|| HttpMethod.POST.toString().equals(method)&&path.matches("/forum/post/\\w+/?")
+				|| HttpMethod.PUT.toString().equals(method)&&path.matches("/forum/post/\\w+/comment/\\w+/?"))
+				;
 	}
 }

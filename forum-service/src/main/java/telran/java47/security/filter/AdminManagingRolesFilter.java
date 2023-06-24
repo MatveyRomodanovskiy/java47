@@ -1,8 +1,7 @@
 package telran.java47.security.filter;
 
 import java.io.IOException;
-import java.security.Principal;
-
+import telran.java47.security.model.User;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -10,39 +9,38 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+import telran.java47.accounting.service.UserRole;
 
 @Component
-@Order(50)
-public class CreatePostCommentAccessFilter implements Filter {
-
+@RequiredArgsConstructor
+@Order(20)
+public class AdminManagingRolesFilter implements Filter {
+	
+	
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 			throws IOException, ServletException {
+		HttpServletRequest request = (HttpServletRequest) req;
+		HttpServletResponse response = (HttpServletResponse) resp;
 		
-		HttpServletRequest request =  (HttpServletRequest) req;
-		HttpServletResponse response = (HttpServletResponse)  resp;
-		String path = request.getServletPath();
-		if (checkEndPoint(request.getMethod(), path)) {
-			Principal principal = request.getUserPrincipal();
-			String[] arr = path.split("/");
-			String user =  arr[arr.length-1];
-			if(!principal.getName().equalsIgnoreCase(user)) {
+		if(checkEndPoint(request.getMethod(), request.getServletPath())) {
+			User user = (User) request.getUserPrincipal();
+			if(user.getRoles().contains(UserRole.ADMINISTRATOR)) {
 				response.sendError(403);
 				return;
 			}
-		
 		}
-		
-		
 		chain.doFilter(request, response);
+
+	}
+	
+	private boolean checkEndPoint(String method, String path) {
+		return path.matches("/account/user/\\w+/role/\\w+/?");
 	}
 
-	private boolean checkEndPoint(String method, String path) {
-		boolean isPost= "POST".equalsIgnoreCase(method)&&path.matches("/forum/post/\\w+/?");
-		boolean isComment = "PUT".equalsIgnoreCase(method)&&path.matches("/forum/post/\\w+/comment/\\w+/?");
-		return isPost || isComment;
-	}
 }
