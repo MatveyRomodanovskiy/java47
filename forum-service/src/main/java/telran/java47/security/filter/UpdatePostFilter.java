@@ -50,7 +50,7 @@ public class UpdatePostFilter implements Filter {
 	}
 
 	private boolean checkEndPoint(String method, String path) {
-		return HttpMethod.PUT.toString().equals(method) && path.matches("/forum/post/\\w+/?");
+		return HttpMethod.PUT.matches(method) && path.matches("/forum/post/\\w+/?");
 	}
 
 
