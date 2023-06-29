@@ -33,8 +33,10 @@ public class UserDetailsServicwImpl implements UserDetailsService {
 									.stream()
 									.map(r -> "ROLE_" + r)
 									.toArray(String[]::new);
-		boolean isCredentialsNonExpired = LocalDateTime.now().isBefore(userAccount.getPasswordExpireDateTime()); 
-		return new User(username, userAccount.getPassword(),true, true, isCredentialsNonExpired, true, AuthorityUtils.createAuthorityList(rolesList));
+//		boolean isCredentialsNonExpired = LocalDateTime.now().isBefore(userAccount.getPasswordExpireDateTime()); 
+//		return new User(username, userAccount.getPassword(),true, true, isCredentialsNonExpired, true, AuthorityUtils.createAuthorityList(rolesList));
+		return new User(username, userAccount.getPassword(), AuthorityUtils.createAuthorityList(rolesList));
+		
 	}
 
 }

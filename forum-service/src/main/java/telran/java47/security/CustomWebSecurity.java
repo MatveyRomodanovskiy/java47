@@ -22,5 +22,11 @@ public class CustomWebSecurity {
 		return post != null && userName.equalsIgnoreCase(post.getAuthor());
 	}
 	
+	public boolean isPasswordNonExpired(String username) {
+		UserAccount userAccount = userAccountRepository.findById(username)
+			.orElseThrow(() -> new UsernameNotFoundException(username));
+		return 	LocalDateTime.now().isBefore(userAccount.getPasswordExpireDateTime()); 
 		
+	}
+
 }
