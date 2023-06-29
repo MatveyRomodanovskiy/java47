@@ -1,5 +1,6 @@
 package telran.java47.accounting.model;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import telran.java47.accounting.service.UserRole;
 import org.springframework.data.annotation.Id;
@@ -16,6 +17,8 @@ public class UserAccount {
 	String login;
 	@Setter
 	String password;
+	@Setter
+	LocalDateTime passwordExpireDateTime;
 	@Setter
 	String firstName;
 	@Setter
